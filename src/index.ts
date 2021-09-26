@@ -4,7 +4,7 @@ import {
 } from '@jupyterlab/application';
 
 import { ICommandPalette } from '@jupyterlab/apputils';
-// import { requestAPI } from './handler';
+import { requestAPI } from './handler';
 
 /**
  * Initialization data for the juypterlab-sparkui-tab extension.
@@ -22,11 +22,22 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const command = 'spark:open-spark-ui';
     commands.addCommand(command, {
       label: 'Open SparkUI',
-      caption: 'Open SparkUI running for your current spark context in your notebook',
+      caption:
+        'Open SparkUI running for your current spark context in your notebook',
       execute: (args: any) => {
         console.log(
           `jlab-examples:main-menu has been called ${args['origin']}.`
         );
+
+        requestAPI<any>('ui')
+          .then(data => {
+            console.log(data);
+          })
+          .catch(reason => {
+            console.error(
+              `The juypterlab_sparkui_tab server extension appears to be missing.\n${reason}`
+            );
+          });
         window.alert(
           `jlab-examples:main-menu has been called ${args['origin']}.`
         );
