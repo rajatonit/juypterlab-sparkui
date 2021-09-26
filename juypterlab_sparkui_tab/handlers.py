@@ -5,8 +5,8 @@ from jupyter_server.utils import url_path_join
 import tornado
 import os
 from . import log
+from . import helpers
 from tornado import httpclient
-from bs4 import BeautifulSoup
 
 proxy_root="/sparkui/ui"
 logger = log.get_logger("sparkmonitorserver")
@@ -25,18 +25,13 @@ class SparkUIRouteHandler(APIHandler):
         """
         http = httpclient.AsyncHTTPClient()
 
-        spark_ui_base_url = os.environ.get("SPARKMONITOR_UI_HOST", "127.0.0.1")
-        spark_ui_port = os.environ.get("SPARKMONITOR_UI_PORT", "4040")
+        spark_ui_base_url = os.environ.get("SPARKMONITOR_UI_HOST", "localhost")
+        spark_ui_port = os.environ.get("SPARKMONITOR_UI_PORT", "8080")
         spark_ui_url = "http://{baseurl}:{port}".format(baseurl=spark_ui_base_url,port=spark_ui_port)
 
-        logger.debug(self.request.uri)
-        logger.debug(self.request.uri.index(proxy_root))
         request_path = self.request.uri[(self.request.uri.index(proxy_root) + len(proxy_root) + 1):]
-        logger.debug(request_path)
         self.replace_path = self.request.uri[:self.request.uri.index(proxy_root) + len(proxy_root)]
-        logger.debug('replace path- ' + self.replace_path)
-        backendurl = url_path_join(spark_ui_url, request_path)
-        logger.debug(backendurl)
+        backendurl = helpers.url_path_join(spark_ui_url, request_path)
         self.debug_url = spark_ui_url
         self.backendurl = backendurl
 
@@ -58,7 +53,7 @@ class SparkUIRouteHandler(APIHandler):
                 content = f.read()
                 self.set_header("Content-Type", content_type)
                 self.write(content)
-            print("SPARKMONITOR_SERVER: Spark UI not running")
+            logger.info("SPARKMONITOR_SERVER: Spark UI not running")
         except FileNotFoundError:
             logger.info("default html file was not found")
 
@@ -66,7 +61,7 @@ class SparkUIRouteHandler(APIHandler):
         try:
             content_type = response.headers["Content-Type"]
             if "text/html" in content_type:
-                content = replace(response.body, self.replace_path)
+                content = helpers.replace(response.body, self.replace_path)
             elif "javascript" in content_type:
                 body = "location.origin +'" + self.replace_path + "' "
                 content = response.body.replace(b"location.origin", body.encode())
