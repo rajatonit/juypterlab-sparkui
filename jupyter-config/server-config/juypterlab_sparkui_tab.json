@@ -1,0 +1,7 @@
+{
+  "ServerApp": {
+    "jpserver_extensions": {
+      "juypterlab_sparkui_tab": true
+    }
+  }
+}
