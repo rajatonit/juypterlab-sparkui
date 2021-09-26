@@ -5,6 +5,8 @@ from jupyter_server.utils import url_path_join
 import tornado
 import os
 from . import log
+from tornado import httpclient
+from bs4 import BeautifulSoup
 
 proxy_root="/sparkui/ui"
 logger = log.get_logger("sparkmonitorserver")
@@ -17,10 +19,12 @@ class SparkUIRouteHandler(APIHandler):
     # Jupyter server
     
     @tornado.web.authenticated
-    def get(self):
+    async def get(self):
         """Handles get requests to the Spark UI
         Fetches the Spark Web UI from the configured ports
         """
+        http = httpclient.AsyncHTTPClient()
+
         spark_ui_base_url = os.environ.get("SPARKMONITOR_UI_HOST", "127.0.0.1")
         spark_ui_port = os.environ.get("SPARKMONITOR_UI_PORT", "4040")
         spark_ui_url = "http://{baseurl}:{port}".format(baseurl=spark_ui_base_url,port=spark_ui_port)
@@ -40,10 +44,41 @@ class SparkUIRouteHandler(APIHandler):
                     os.environ.get(
                         "SPARKMONITOR_UI_PORT", "4040"), os.environ.get("SPARKMONITOR_UI_HOST", "127.0.0.1"),
                     request_path)
+        try:
+            x = await http.fetch(backendurl)
+            self.handle_response(x)
+        except:
+            self.handle_bad_response()
 
-        self.finish(json.dumps({
-            "data": "Test!"
-        }))
+    def handle_bad_response(self):
+        content_type = "text/html"
+
+        try:
+            with open(os.path.join(os.path.dirname(__file__), "spark_not_found.html"), 'r') as f:
+                content = f.read()
+                self.set_header("Content-Type", content_type)
+                self.write(content)
+            print("SPARKMONITOR_SERVER: Spark UI not running")
+        except FileNotFoundError:
+            logger.info("default html file was not found")
+
+    def handle_response(self, response):
+        try:
+            content_type = response.headers["Content-Type"]
+            if "text/html" in content_type:
+                content = replace(response.body, self.replace_path)
+            elif "javascript" in content_type:
+                body = "location.origin +'" + self.replace_path + "' "
+                content = response.body.replace(b"location.origin", body.encode())
+            else:
+                # Probably binary response, send it directly.
+                content = response.body
+            self.set_header("Content-Type", content_type)
+            self.write(content)
+            self.finish()
+        except Exception as e:
+            logger.error(str(e))
+            raise e
 
 def setup_handlers(web_app):
     # init_logger()
