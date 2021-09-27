@@ -52,4 +52,9 @@ jobs:
       - name: Check Release
         uses: jupyter-server/jupyter_releaser/.github/actions/check-release@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PUSH_TOKEN }}
+      - name: Upload Distributions
+        uses: actions/upload-artifact@v2
+        with:
+          name: jupyter-releaser-dist-${{ github.run_number }}
+          path: .jupyter_releaser_checkout/dist
