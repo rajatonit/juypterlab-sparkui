@@ -71,6 +71,12 @@ jobs:
         name: juypter_sparkui_tab-sdist
         path: juypter_sparkui_tab.tar.gz
 
+    - name: Upload Distributions
+      uses: actions/upload-artifact@v2
+      with:
+        name: juypter_sparkui_tab.tar.gz
+        path: .
+
   test_isolated:
     needs: build
     runs-on: ubuntu-latest
