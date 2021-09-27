@@ -89,7 +89,9 @@
     "hooks": {
       "before-build-npm": [
         "python -m pip install jupyterlab~=3.1",
-        "jlpm"
+        "jlpm",
+        "bs4",
+        "lxml"
       ]
     }
   }
