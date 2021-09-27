@@ -76,28 +76,27 @@ class SparkUI extends IFrame {
 
 class sparkUIWidget extends Widget {
   /**
-  * Construct a new APOD widget.
-  */
-  constructor(html:any) {
+   * Construct a new APOD widget.
+   */
+  constructor(html: any) {
     super();
 
     this.addClass('sparkui-widget');
 
     // Add an image element to the panel
     this.iframe = document.createElement('iframe');
-    // const baseUrl = PageConfig.getBaseUrl();
-    this.iframe.setAttribute("srcdoc", html);
-    this.iframe.setAttribute("width", "100%");
-    this.iframe.setAttribute("height", "100%");
+    const baseUrl = PageConfig.getBaseUrl();
+    this.iframe.setAttribute('url', baseUrl);
+    this.iframe.setAttribute('width', '100%');
+    this.iframe.setAttribute('height', '100%');
 
     this.node.appendChild(this.iframe);
   }
 
   /**
-  * The summary text element associated with the widget.
-  */
+   * The summary text element associated with the widget.
+   */
   readonly iframe: HTMLElement;
-
 }
 
 export default plugin;
