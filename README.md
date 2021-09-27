@@ -103,3 +103,4 @@ folder is located. Then you can remove the symlink named `juypterlab-sparkui-tab
 ### Packaging the extension
 
 See [RELEASE](RELEASE.md)
+
